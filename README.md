@@ -2,6 +2,7 @@
 
 - [Phasorial Circuit Simulator](#phasorial-circuit-simulator)
 - [Requirements](#requirements)
+- [How To Install](#how-to-install)
 - [How To Use](#how-to-use)
 
 
@@ -31,6 +32,9 @@ The objective of this repository is to provide a simulator that is viable for si
 -  python>=3.10
 -  numpy>=1.24.1
 -  schemdraw>=0.19
+
+## How To Install
+
 
   ## How To Use
 
