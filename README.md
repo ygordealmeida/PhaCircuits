@@ -2,7 +2,7 @@
 
 - [Phasorial Circuit Simulator](#phasorial-circuit-simulator)
 - [Requirements](#requirements)
-
+- [How To Use](#how-to-use)
 
 
 
@@ -32,3 +32,25 @@ The objective of this repository is to provide a simulator that is viable for si
 -  numpy>=1.24.1
 -  schemdraw>=0.19
 
+  ## How To Use
+
+  First you need to instantiate a circuit
+  
+   ```
+    circuit1 = circuit()
+   ```
+  Then you can place the components of youy circuit using:
+   ```
+  circuit1.element("Name of element", (X_start, Y_start), (X_end, Y_end), Value, "Component Label")
+   ```
+  When your circuit is finished you can see the diagram with:
+   ```
+    circuit1.draw()
+   ```
+  And see the currents in the components with:
+  ```
+    circuit1.see_currents("Component1 Label", "Component2 Label")
+  ```
+  if you want see all currents use Label = None
+  
+  For more see examples and documentation.
