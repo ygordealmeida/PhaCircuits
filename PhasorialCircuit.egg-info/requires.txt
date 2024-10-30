@@ -1,2 +1,0 @@
-numpy>=1.24.1
-schemdraw>=0.19

@@ -1,7 +1,0 @@
-README.md
-setup.py
-PhasorialCircuit.egg-info/PKG-INFO
-PhasorialCircuit.egg-info/SOURCES.txt
-PhasorialCircuit.egg-info/dependency_links.txt
-PhasorialCircuit.egg-info/requires.txt
-PhasorialCircuit.egg-info/top_level.txt

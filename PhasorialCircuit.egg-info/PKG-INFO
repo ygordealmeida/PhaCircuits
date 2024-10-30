@@ -1,7 +1,0 @@
-Metadata-Version: 2.1
-Name: PhasorialCircuit
-Version: 0.1
-Summary: Circuits simulation in phasorial domain
-Author: @ygordealmeida
-Requires-Dist: numpy>=1.24.1
-Requires-Dist: schemdraw>=0.19
