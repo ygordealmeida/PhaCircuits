@@ -37,7 +37,7 @@ The objective of this repository is to provide a simulator that is viable for si
   PhasorialCircuit can be installed from pip using
 
    ```
-    pip install schemdraw
+    pip install PhasorialCircuit
    ```
 
   ## How To Use
