@@ -2,7 +2,6 @@
 
 - [Phasorial Circuit Simulator](#phasorial-circuit-simulator)
 - [Requirements](#requirements)
-- [How To Install](#how-to-install)
 - [How To Use](#how-to-use)
 
 
@@ -33,15 +32,16 @@ The objective of this repository is to provide a simulator that is viable for si
 -  numpy>=1.24.1
 -  schemdraw>=0.19
 
-## How To Install
-
 
   ## How To Use
 
-  First you need to instantiate a circuit
+  First you need to have the PhaCircuits folder in your code directory
+  Then import Circuit from PhaCircuits and instantiate a circuit
   
    ```
-    circuit1 = circuit()
+    from PhaCircuits import Circuit
+
+    circuit1 = Circuit()
    ```
   Then you can place the components of youy circuit using:
    ```
