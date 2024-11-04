@@ -32,6 +32,13 @@ The objective of this repository is to provide a simulator that is viable for si
 -  numpy>=1.24.1
 -  schemdraw>=0.19
 
+  ## How to Install
+
+  PhasorialCircuit can be installed from pip using
+
+   ```
+    pip install schemdraw
+   ```
 
   ## How To Use
 
