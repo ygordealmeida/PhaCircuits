@@ -36,6 +36,7 @@ The objective of this repository is to provide a simulator that is viable for si
   ## How To Use
 
   First you need to have the PhaCircuits folder in your code directory
+  
   Then import Circuit from PhaCircuits and instantiate a circuit
   
    ```
