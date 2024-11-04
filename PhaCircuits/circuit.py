@@ -1,10 +1,11 @@
+#circuit.py
 #After import only the necessary parts of the librariesimport schemdraw
+import schemdraw
 import schemdraw.elements as elm
 import numpy as np
 from math import atan
 
-
-class Circuito:
+class Circuit:
     def __init__(self):
         self.elements =0 # Counts the number of elements
         self.elements_list =[] #List that saves the elements
@@ -13,7 +14,8 @@ class Circuito:
         self.reference_node=0  #Default reference node
         self.currents ={}
         self.vsource_wire={}
-        schemdraw.config(inches_per_unit=1.3)  #Default fig size
+        self.inches_punit()
+
 
     #Add Element
     def element(self, Element: str, Start: tuple, End: tuple, Value: float=0, Label: str = None):
@@ -23,6 +25,8 @@ class Circuito:
         self.nodes.add(Start)
         self.nodes.add(End)
 
+    def inches_punit(self,value: float = 1.2):
+        schemdraw.config(lw=1, font='serif',inches_per_unit=value)
 
 
     def show_elements(self):
@@ -160,7 +164,8 @@ class Circuito:
         modulo= complex_ret.real
         return(modulo,angulo)
     def draw_with_currents(self,Label: list = [None]):
-            with schemdraw.Drawing(figsize=(15,15)) as d:
+
+            with schemdraw.Drawing() as d:
                 for iten in self.elements_list:
     
                     if(iten[0]=='Resistor'):
