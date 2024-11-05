@@ -161,7 +161,7 @@ class Circuit:
         complex_ret = value
         angulo = atan(complex_ret.imag/complex_ret.real)
         angulo = angulo*180/np.pi
-        modulo= complex_ret.real
+        modulo= ((complex_ret.real)**2 + ( complex_ret.imag )**2 )**(1/2)
         return(modulo,angulo)
     def draw_with_currents(self,Label: list = [None]):
 
