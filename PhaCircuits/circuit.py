@@ -4,6 +4,7 @@ import schemdraw
 import schemdraw.elements as elm
 import numpy as np
 from math import atan
+from cmath import phase
 
 class Circuit:
     def __init__(self):
@@ -58,7 +59,7 @@ class Circuit:
         # enumerate returns index and node 
         for idx, node in enumerate(self.nodes):
             self.node_map[node] = idx #The node is the key and idx is the value
-        #print("Mapeamento de nós:", self.node_map)
+        print("Mapeamento de nós:", self.node_map)
 
 
     def build_equations(self):
@@ -158,10 +159,8 @@ class Circuit:
         return(self.currents[Label])
 
     def current_complex(self,value):
-        complex_ret = value
-        angulo = atan(complex_ret.imag/complex_ret.real)
-        angulo = angulo*180/np.pi
-        modulo= ((complex_ret.real)**2 + ( complex_ret.imag )**2 )**(1/2)
+        modulo = abs(value)
+        angulo = cmath.phase(value) * 180/np.pi
         return(modulo,angulo)
     def draw_with_currents(self,Label: list = [None]):
 
