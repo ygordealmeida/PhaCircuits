@@ -4,7 +4,7 @@ import schemdraw
 import schemdraw.elements as elm
 import numpy as np
 from math import atan
-from cmath import phase
+import cmath
 
 class Circuit:
     def __init__(self):
