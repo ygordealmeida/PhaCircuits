@@ -21,10 +21,11 @@ class Circuit:
     #Add Element
     def element(self, Element: str, Start: tuple, End: tuple, Value: float=0, Label: str = None):
         self.elements_list.append([Element, Start, End, Value, Label])
-        self.elements +=1
         #Add nodes to the set
-        self.nodes.add(Start)
-        self.nodes.add(End)
+        if Element not in 'Coupling':
+            self.elements +=1
+            self.nodes.add(Start)
+            self.nodes.add(End)
 
     def inches_punit(self,value: float = 1.2):
         schemdraw.config(lw=1, font='serif',inches_per_unit=value)
@@ -69,43 +70,69 @@ class Circuit:
         I = np.zeros(n, dtype=complex) #Currents Matrix
 
         for elm in self.elements_list:
-          Element, Start, End, Value, Label = elm
-          idx_start=self.node_map[Start]
-          idx_end=self.node_map[End]
+            Element, Start, End, Value, Label = elm
 
-          if(Element=='Current Source'):
-            I[idx_start] -= Value
-            I[idx_end] += Value
+            if(Element == 'Coupling'):
+                idxes_start = list()
+                idxes_end = list()
+                impedances = list()
+                name1, name2, k = elm[1], elm[2], elm[3]
 
-          #Voltage Source stamp from modified nodal analysis
-          if(Element == 'Voltage Source' ):
-            G = np.vstack([G, np.zeros(G.shape[1])])  #Add a new row
-            G = np.hstack([G, np.zeros((G.shape[0], 1))])  #Add a new column
-            G[-1, idx_start] = -1
-            G[-1, idx_end] = +1
-            G[idx_start,-1] =-1
-            G[idx_end,-1] =+1
-            I = np.append(I, Value)  
-            self.vsource_wire[Label] = I.shape[0]
+                for x in self.elements_list:
+                    if x[-1] == name1 or x[-1] == name2:
+                        Start, End = x[1], x[2]
+                        idxes_start.append(self.node_map[Start])
+                        idxes_end.append(self.node_map[End])
+                        impedances.append(x[-2])
 
-          #Wire is a Voltage Source with valeu null
-          elif(Element == 'Wire'):
-            G = np.vstack([G, np.zeros(G.shape[1])])  
-            G = np.hstack([G, np.zeros((G.shape[0], 1))])  
-            G[-1, idx_start] = -1
-            G[-1, idx_end] = +1
-            G[idx_start,-1] =-1
-            G[idx_end,-1] =+1
-            I = np.append(I, 0) 
-            
-        
-          #In AC analysis Resistor, Inductor and Capacitor is measured in ohms
-          #So uses the resistor stamp
-          elif(Element == 'Resistor' or Element == 'Inductor' or Element == 'Capacitor' ):
-            G[idx_start, idx_start] += 1 / Value
-            G[idx_end, idx_end] += 1 / Value
-            G[idx_start, idx_end] -= 1 / Value
-            G[idx_end, idx_start] -= 1 / Value
+                coupling_impedance = k*np.sqrt(abs(impedances[0]*impedances[1]))*1j
+
+                for i in range(2):
+                    G[idxes_start[i], idxes_start[i]] -= 1 / impedances[i]
+                    G[idxes_end[i], idxes_end[i]] -= 1 / impedances[i]
+                    G[idxes_start[i], idxes_end[i]] += 1 / impedances[i]
+                    G[idxes_end[i], idxes_start[i]] += 1 / impedances[i]
+
+                    G[idxes_start[i], idxes_start[i]] += impedances[1]/(impedances[0]*impedances[1]*(1-k**2))
+                    G[idxes_end[i], idxes_end[i]] += impedances[0]/(impedances[0]*impedances[1]*(1-k**2))
+                    G[idxes_start[i], idxes_end[i]] -= coupling_impedance/(impedances[0]*impedances[1]*(1-k**2))
+                    G[idxes_end[i], idxes_start[i]] -= coupling_impedance/(impedances[0]*impedances[1]*(1-k**2))
+            else:
+                idx_start=self.node_map[Start]
+                idx_end=self.node_map[End]
+
+                if(Element=='Current Source'):
+                    I[idx_start] -= Value
+                    I[idx_end] += Value
+
+                #Voltage Source stamp from modified nodal analysis
+                elif(Element == 'Voltage Source' ):
+                    G = np.vstack([G, np.zeros(G.shape[1])])  #Add a new row
+                    G = np.hstack([G, np.zeros((G.shape[0], 1))])  #Add a new column
+                    G[-1, idx_start] = -1
+                    G[-1, idx_end] = +1
+                    G[idx_start,-1] =-1
+                    G[idx_end,-1] =+1
+                    I = np.append(I, Value)  
+                    self.vsource_wire[Label] = I.shape[0]
+
+                #Wire is a Voltage Source with valeu null
+                elif(Element == 'Wire'):
+                    G = np.vstack([G, np.zeros(G.shape[1])])  
+                    G = np.hstack([G, np.zeros((G.shape[0], 1))])  
+                    G[-1, idx_start] = -1
+                    G[-1, idx_end] = +1
+                    G[idx_start,-1] =-1
+                    G[idx_end,-1] =+1
+                    I = np.append(I, 0) 
+                    
+                #In AC analysis Resistor, Inductor and Capacitor is measured in ohms
+                #So uses the resistor stamp
+                elif(Element == 'Resistor' or Element == 'Inductor' or Element == 'Capacitor' ):
+                    G[idx_start, idx_start] += 1 / Value
+                    G[idx_end, idx_end] += 1 / Value
+                    G[idx_start, idx_end] -= 1 / Value
+                    G[idx_end, idx_start] -= 1 / Value
 
         return G, I
 
@@ -162,6 +189,7 @@ class Circuit:
         modulo = abs(value)
         angulo = cmath.phase(value) * 180/np.pi
         return(modulo,angulo)
+    
     def draw_with_currents(self,Label: list = [None]):
 
             with schemdraw.Drawing() as d:
