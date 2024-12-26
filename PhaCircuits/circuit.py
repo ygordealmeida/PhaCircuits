@@ -86,6 +86,7 @@ class Circuit:
                         impedances.append(x[-2])
 
                 coupling_impedance = k*np.sqrt(abs(impedances[0]*impedances[1]))*1j
+                x = (impedances[0]*impedances[1]*(1-k**2))
 
                 for i in range(2):
                     G[idxes_start[i], idxes_start[i]] -= 1 / impedances[i]
@@ -93,10 +94,21 @@ class Circuit:
                     G[idxes_start[i], idxes_end[i]] += 1 / impedances[i]
                     G[idxes_end[i], idxes_start[i]] += 1 / impedances[i]
 
-                    G[idxes_start[i], idxes_start[i]] += impedances[1]/(impedances[0]*impedances[1]*(1-k**2))
-                    G[idxes_end[i], idxes_end[i]] += impedances[0]/(impedances[0]*impedances[1]*(1-k**2))
-                    G[idxes_start[i], idxes_end[i]] -= coupling_impedance/(impedances[0]*impedances[1]*(1-k**2))
-                    G[idxes_end[i], idxes_start[i]] -= coupling_impedance/(impedances[0]*impedances[1]*(1-k**2))
+                impedances = impedances[::-1]
+                node_ls = ((0,1), (1,0))
+
+                for i in range(2):
+                    l1,l2 = node_ls[i]
+
+                    G[idxes_start[i], idxes_start[i]] += impedances[i]/x
+                    G[idxes_end[i], idxes_end[i]] += impedances[i]/x
+                    G[idxes_start[i], idxes_end[i]] -= impedances[i]/x
+                    G[idxes_end[i], idxes_start[i]] -= impedances[i]/x
+
+                    G[idxes_start[l1], idxes_start[l2]] -= coupling_impedance/x
+                    G[idxes_end[l1], idxes_end[l2]] -= coupling_impedance/x
+                    G[idxes_start[l1], idxes_end[l2]] -= coupling_impedance/x
+                    G[idxes_end[l1], idxes_start[l2]] -= coupling_impedance/x
             else:
                 idx_start=self.node_map[Start]
                 idx_end=self.node_map[End]
@@ -116,7 +128,6 @@ class Circuit:
                     I = np.append(I, Value)  
                     self.vsource_wire[Label] = I.shape[0]
 
-                #Wire is a Voltage Source with valeu null
                 elif(Element == 'Wire'):
                     G = np.vstack([G, np.zeros(G.shape[1])])  
                     G = np.hstack([G, np.zeros((G.shape[0], 1))])  
