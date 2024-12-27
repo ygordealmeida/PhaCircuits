@@ -77,6 +77,7 @@ class Circuit:
                 idxes_end = list()
                 impedances = list()
                 name1, name2, k = elm[1], elm[2], elm[3]
+                dot_conv = 1 if Label == '+' else -1
 
                 for x in self.elements_list:
                     if x[-1] == name1 or x[-1] == name2:
@@ -86,7 +87,7 @@ class Circuit:
                         impedances.append(x[-2])
 
                 coupling_impedance = k*np.sqrt(abs(impedances[0]*impedances[1]))*1j
-                x = (impedances[0]*impedances[1]*(1-k**2))
+                x = (impedances[0]*impedances[1]*(1-dot_conv*k**2))
 
                 for i in range(2):
                     G[idxes_start[i], idxes_start[i]] -= 1 / impedances[i]
@@ -105,10 +106,10 @@ class Circuit:
                     G[idxes_start[i], idxes_end[i]] -= impedances[i]/x
                     G[idxes_end[i], idxes_start[i]] -= impedances[i]/x
 
-                    G[idxes_start[l1], idxes_start[l2]] -= coupling_impedance/x
-                    G[idxes_end[l1], idxes_end[l2]] -= coupling_impedance/x
-                    G[idxes_start[l1], idxes_end[l2]] -= coupling_impedance/x
-                    G[idxes_end[l1], idxes_start[l2]] -= coupling_impedance/x
+                    G[idxes_start[l1], idxes_start[l2]] -= dot_conv*coupling_impedance/x
+                    G[idxes_end[l1], idxes_end[l2]] -= dot_conv*coupling_impedance/x
+                    G[idxes_start[l1], idxes_end[l2]] += dot_conv*coupling_impedance/x
+                    G[idxes_end[l1], idxes_start[l2]] += dot_conv*coupling_impedance/x
             else:
                 idx_start=self.node_map[Start]
                 idx_end=self.node_map[End]
