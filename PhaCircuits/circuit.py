@@ -38,20 +38,43 @@ class Circuit:
 
     def draw(self):
         with schemdraw.Drawing() as d:
-            for iten in self.elements_list:
-                if(iten[0]=='Resistor'):
-                            d.add(elm.Resistor(scale=0.5).endpoints(iten[1], iten[2]).label( str(iten[3])+" Ω",loc='top', fontsize=8).label(iten[4],loc='bot', fontsize=8))
-                elif(iten[0]=='Capacitor'):
-                        capacitor_value = f"{int(iten[3].imag)}j" if iten[3].imag % 1 == 0 else f"{iten[3].imag}j"
-                        C= d.add(elm.Capacitor(scale=0.7).endpoints(iten[1], iten[2]).label(capacitor_value + " Ω", loc='top', fontsize=8).label(iten[4], loc='bot', fontsize=8))
-                elif(iten[0]=='Inductor'):
-                        d.add(elm.Inductor(scale=0.7).endpoints(iten[1], iten[2]).label(str(iten[3])+" Ω",loc='top', fontsize=8).label(iten[4],loc='bot', fontsize=8))
-                elif(iten[0] == 'Voltage Source'):
-                        d.add(elm.SourceV(scale=0.7).endpoints(iten[1], iten[2]).label(str(iten[3])+"V",loc='top', fontsize=8).label(iten[4],loc='bot', fontsize=8)),
-                elif(iten[0] == 'Current Source'):
-                        d.add(elm.SourceI(scale=0.7).endpoints(iten[1], iten[2]).label(str(iten[3])+"A",loc='top', fontsize=8).label(iten[4],loc='bot', fontsize=8))
-                elif(iten[0] == 'Wire'):
-                        d.add(elm.Line(scale=0.5).endpoints(iten[1], iten[2]))
+            for item in self.elements_list:
+                if(item[0]=='Resistor'):
+                            d.add(elm.Resistor(scale=0.5).endpoints(item[1], item[2]).label( str(item[3])+" Ω",loc='top', fontsize=8).label(item[4],loc='bot', fontsize=8))
+                elif(item[0]=='Capacitor'):
+                        capacitor_value = f"{int(item[3].imag)}j" if item[3].imag % 1 == 0 else f"{item[3].imag}j"
+                        C= d.add(elm.Capacitor(scale=0.7).endpoints(item[1], item[2]).label(capacitor_value + " Ω", loc='top', fontsize=8).label(item[4], loc='bot', fontsize=8))
+                elif(item[0]=='Inductor'):
+                        d.add(elm.Inductor(scale=0.7).endpoints(item[1], item[2]).label(str(item[3])+" Ω",loc='top', fontsize=8).label(item[4],loc='bot', fontsize=8))
+                elif(item[0] == 'Voltage Source'):
+                        d.add(elm.SourceV(scale=0.7).endpoints(item[1], item[2]).label(str(item[3])+"V",loc='top', fontsize=8).label(item[4],loc='bot', fontsize=8)),
+                elif(item[0] == 'Current Source'):
+                        d.add(elm.SourceI(scale=0.7).endpoints(item[1], item[2]).label(str(item[3])+"A",loc='top', fontsize=8).label(item[4],loc='bot', fontsize=8))
+                elif(item[0] == 'Wire'):
+                        d.add(elm.Line(scale=0.5).endpoints(item[1], item[2]))
+                elif(item[0] == 'Coupling'):
+                        #d.add(elm.Dot().at((2, 0.5)))
+                        #d.add(elm.Dot().at((2, 0.5)))
+                        name1, name2, k, Label = item[1:]
+                        dot_conv = 1 if Label == '+' else -1
+                        idxes_start = list()
+                        idxes_end = list()
+                        impedances = list()
+                        offset = 0.2
+
+                        for x in self.elements_list:
+                            if x[-1] == name1 or x[-1] == name2:
+                                Start = x[1][0], x[1][1]
+                                End = x[2][0], x[2][1] + offset
+
+                                idxes_start.append(Start)
+                                idxes_end.append(End)
+                                impedances.append(x[-2])
+
+                        coupling_impedance = k*np.sqrt(abs(impedances[0]*impedances[1]))*1j
+                        d.add(elm.Dot(radius=0.05).at((idxes_start[0])))
+                        d.add(elm.Dot(radius=0.05).at((idxes_start[1])))
+                        d.add(elm.Arc2(k=0.5, arrow='<->').at((idxes_start[0])).to((idxes_start[1])).label(f'{coupling_impedance}'))
 
     def map_nodes(self):
         #Create a mapping to associeate each node with an index
@@ -76,7 +99,7 @@ class Circuit:
                 idxes_start = list()
                 idxes_end = list()
                 impedances = list()
-                name1, name2, k = elm[1], elm[2], elm[3]
+                name1, name2, k = elm[1:4]
                 dot_conv = 1 if Label == '+' else -1
 
                 for x in self.elements_list:
