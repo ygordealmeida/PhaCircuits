@@ -64,17 +64,35 @@ class Circuit:
 
                         for x in self.elements_list:
                             if x[-1] == name1 or x[-1] == name2:
-                                Start = x[1][0], x[1][1]
-                                End = x[2][0], x[2][1] + offset
-
+                                Start, End = x[1:3]
                                 idxes_start.append(Start)
                                 idxes_end.append(End)
                                 impedances.append(x[-2])
 
                         coupling_impedance = k*np.sqrt(abs(impedances[0]*impedances[1]))*1j
-                        d.add(elm.Dot(radius=0.05).at((idxes_start[0])))
-                        d.add(elm.Dot(radius=0.05).at((idxes_start[1])))
-                        d.add(elm.Arc2(k=0.5, arrow='<->').at((idxes_start[0])).to((idxes_start[1])).label(f'{coupling_impedance}'))
+
+                        for i in range(2):
+                            x1, x2 = idxes_start[i][0], idxes_end[i][0]
+                            y1, y2 = idxes_start[i][1], idxes_end[i][1]
+
+                            elem_length = np.sqrt((idxes_start[i][0] - idxes_end[i][0])**2 + (idxes_start[i][1] - idxes_end[i][1])**2)
+                            
+                            A = 0.23
+                            B = 0.87*elem_length
+
+                            c = 1/2 * (A**2 - B**2 + x2**2 - x1**2 + y2**2 - y1**2)
+                            gamma = c - (y2-y1)*y1
+                            alpha = gamma/(x2-x1) if x2-x1 != 0 else 10000
+                            beta = ((x2-x1)/(y2-y1))**2 if y2-y1 !=0 else 10000
+                            T = x1**2 + (alpha**2)*beta - A**2
+
+                            x_dot = (2*x1 + 2*beta*alpha + np.sqrt((-2*x1-2*alpha*beta)**2 - 4*T*(1+beta)))/(2*(1+beta))
+                            y_dot = y2 + np.sqrt(-1*x_dot**2 + 2*x_dot*x2 + B**2 - x2**2)
+
+                            d.add(elm.Dot(radius=0.05).at((x_dot, y_dot)))
+                        
+                        arc = -1 if idxes_start[0][0] > idxes_start[1][0] else 1
+                        d.add(elm.Arc2(k=arc*0.5, arrow='<->').at((idxes_start[0][0], idxes_start[0][1])).to((idxes_start[1][0], idxes_start[1][1])).label(f'{coupling_impedance}'))
 
     def map_nodes(self):
         #Create a mapping to associeate each node with an index
