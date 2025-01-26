@@ -5,6 +5,7 @@ import schemdraw.elements as elm
 import numpy as np
 from math import atan
 import cmath
+import matplotlib.pyplot as plt
 
 class Circuit:
     def __init__(self):
@@ -16,6 +17,7 @@ class Circuit:
         self.currents ={}
         self.vsource_wire={}
         self.inches_punit()
+        self.frequency = 60  #Frequency in Hz
 
 
     #Add Element
@@ -181,8 +183,6 @@ class Circuit:
         
 
     def get_current(self, Label: str):
-        self.calculate_currents()
-        #print("Corrente ",self.currents[Label])
         return(self.currents[Label])
 
     def current_complex(self,value):
@@ -191,6 +191,7 @@ class Circuit:
         return(modulo,angulo)
     
     def draw_with_currents(self,Label: list = [None]):
+            self.calculate_currents()
 
             with schemdraw.Drawing() as d:
                 for iten in self.elements_list:
@@ -229,3 +230,75 @@ class Circuit:
                     elif(iten[0] == 'Wire'):
                         d.add(elm.Line(scale = 0.5).endpoints(iten[1], iten[2]))
                         #d.add(elm.Ground).endpoints(iten[1],iten[2])
+
+    def map_phasor(self,Label: list = [None]):
+        ph_list=[]
+        cuph_list=[]
+
+        for iten in self.elements_list:
+            if(iten[0]!='Wire'):
+                for name in Label:
+                    if(iten[4]==name or name ==None):
+                        #Change the name of current_complex funciton to number complex
+
+                        idx_start=self.node_map[iten[1]]
+                        idx_end=self.node_map[iten[2]]
+                        
+                        Vvalue = (self.V[idx_start]-self.V[idx_end])
+                        if(iten[0]=='Voltage Source'):
+                            Vvalue = -Vvalue
+                        Vmag, Vphase = self.current_complex(Vvalue)
+                        if(iten[0]!='Current Source'):
+                            Imag,Iphase=self.current_complex(self.get_current(iten[4]))
+                            cuph_list.append([name, Imag, Iphase])
+                        ph_list.append([name, Vmag, Vphase])
+
+        return(ph_list,cuph_list)
+
+
+#This function plots the phasor diagram of the circuit
+    def plot_phasor(self,Label: list = [None]):
+        self.calculate_currents()
+        phasor_list=[]
+        current_phasor_list=[]
+        
+        phasor_list,current_phasor_list = self.map_phasor(Label)
+        self.plotyy_phasor(phasor_list,0)
+        self.plotyy_phasor(current_phasor_list,1)
+
+#Auxiliar function to plot the phasor diagram
+    def plotyy_phasor(self, list, a):
+        if a==1:
+            colored = "blue"
+        else:
+            colored = "black"
+        plt.figure(figsize=(6, 6))
+        ax = plt.subplot(1, 1, 1, polar=True)
+
+        for label,magnitude,angle_deg in list:
+            angle_rad = np.deg2rad(angle_deg)
+            ax.quiver(0, 0, angle_rad, magnitude, angles='xy', scale_units='xy', scale=1, color=colored, alpha=0.7)
+            #Annotate the phasor
+            ax.annotate(f"{magnitude:.2f}∠{angle_deg:.2f}°",
+                xy=(angle_rad, magnitude),
+                textcoords="offset points",
+                xytext=(10, 10),
+                ha='center', fontsize=10)
+            #Graphical adjustments (limits and proportion)
+
+        Vmag_values = [row[1] for row in list]
+        max_Vmag = max(Vmag_values)
+        ax.set_ylim(0, max_Vmag*1.2)
+        if a==1:
+            ax.set_title("Diagrama Fasorial das Correntes", va='bottom', fontsize=14)
+        else:
+            ax.set_title("Diagrama Fasorial das Tensões", va='bottom', fontsize=14)
+        ax.set_yticklabels([])
+        plt.show()
+
+    def plot_signal(self,Label: list = [None]):
+        phasor_list=[]
+        current_phasor_list=[]
+        phasor_list,current_phasor_list = self.map_phasor(Label)
+        
+                    
